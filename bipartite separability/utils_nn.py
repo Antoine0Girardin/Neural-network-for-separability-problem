@@ -53,41 +53,11 @@ def keras_distance(p,q):
         d2: difference element squared wise
     """
     #some distances defined here are not usable for training
-    if cf.pnn.loss.lower() == 'td':       
+    if cf.pnn.loss.lower() == 'td': #Trace distance     
         e,_=tf.linalg.eigh(p-q)
         return  0.5*tf.math.reduce_sum(tf.math.abs(e),axis=-1)
     if cf.pnn.loss.lower() == 'hs': #Hilbert-Schmidt distance
         return tf.math.sqrt(tf.linalg.trace(tf.linalg.matmul(tf.linalg.adjoint(p-q), p-q)))
-    if cf.pnn.loss.lower() == 'bures':    #2(1-sqrt(fid))    
-        e, v= tf.linalg.eigh(p)
-        srp=tf.linalg.matmul(tf.linalg.matmul(v, tf.linalg.diag(tf.math.sqrt(e))), tf.linalg.adjoint(v))
-        e2,_=tf.linalg.eigh(tf.linalg.matmul(tf.linalg.matmul(srp, q), srp))
-        srfid= tf.reduce_sum(tf.math.sqrt(e2))
-        return  2*(1-srfid)
-    if cf.pnn.loss.lower() == 'fid': 
-        e, v= tf.linalg.eigh(p)
-        srp=tf.linalg.matmul(tf.linalg.matmul(v, tf.linalg.diag(tf.math.sqrt(e))), tf.linalg.adjoint(v))
-        e2,_=tf.linalg.eigh(tf.linalg.matmul(tf.linalg.matmul(srp, q), srp))
-        srfid= tf.reduce_sum(tf.math.sqrt(e2))
-        return -srfid**2
-    if cf.pnn.loss.lower() == 'frobenius':
-        diff=p-q
-        return tf.math.sqrt(tf.linalg.trace(tf.linalg.matmul(diff, tf.transpose(diff, conjugate=True))))
-    if cf.pnn.loss.lower()== 'qre':
-        eigq,vq=tf.linalg.eigh(q)
-        eigp,vp=tf.linalg.eigh(p)
-        logq= tf.linalg.matmul(tf.linalg.matmul(vq, tf.linalg.diag(tf.math.log(q))), tf.linalg.adjoint(vq))
-        logp= tf.linalg.matmul(tf.linalg.matmul(vp, tf.linalg.diag(tf.math.log(p))), tf.linalg.adjoint(vp))
-        return tf.linalg.trace(tf.linalg.matmul(q, logq-logp))
-    if cf.pnn.loss.lower() == 'd1':
-        return tf.math.reduce_sum(tf.math.reduce_sum((tf.math.abs(p-q)),axis=0))
-    if cf.pnn.loss.lower() == 'd2':
-        return tf.math.sqrt(tf.math.reduce_sum(tf.math.reduce_sum((tf.math.squared_difference(p,q)))))
-    if cf.pnn.loss.lower() == 'dtest':
-        return tf.math.reduce_sum(tf.math.reduce_sum((tf.math.abs(p-q))))
-    if cf.pnn.loss.lower() == 'tracenorm':
-        diff=p-q
-        return tf.linalg.trace(tf.math.sqrt(tf.linalg.matmul(diff,tf.transpose(diff, conjugate=True))))
     else:
         print('define the pnn.loss')
     
